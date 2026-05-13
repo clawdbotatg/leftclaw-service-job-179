@@ -224,6 +224,9 @@ contract CLAWDVault is Ownable2Step, ReentrancyGuard, AutomationCompatibleInterf
         if (_sellPct == 0 || _sellPct > 100) revert InvalidPercent();
         if (_buyPct == 0 || _buyPct > 100) revert InvalidPercent();
         if (_maxSlippageBps == 0 || _maxSlippageBps > 10000) revert InvalidSlippage();
+        // Threshold bps must be < 10000 to prevent arithmetic underflow in _evaluate().
+        if (_pumpBps >= 10000) revert InvalidSlippage();
+        if (_dipBps >= 10000) revert InvalidSlippage();
 
         pumpThresholdBps = _pumpBps;
         dipThresholdBps = _dipBps;
@@ -238,13 +241,23 @@ contract CLAWDVault is Ownable2Step, ReentrancyGuard, AutomationCompatibleInterf
     /* -------------------------- Chainlink Automation -------------------------- */
 
     /// @inheritdoc AutomationCompatibleInterface
-    /// @dev Marked view-compatible: Chainlink calls this off-chain, but spec requires `view`.
+    /// @dev Returns (false, "") rather than reverting when pool history is insufficient,
+    ///      so Chainlink Automation handles it gracefully during pool warmup.
     function checkUpkeep(bytes calldata /* checkData */ )
         external
         view
         override
         returns (bool upkeepNeeded, bytes memory performData)
     {
+        try this.checkUpkeepInternal() returns (bool needed, bytes memory data) {
+            return (needed, data);
+        } catch {
+            return (false, bytes(""));
+        }
+    }
+
+    /// @notice Internal helper for checkUpkeep — exposed as external so try/catch works.
+    function checkUpkeepInternal() external view returns (bool upkeepNeeded, bytes memory performData) {
         (bool isPump, bool isDip,,) = _evaluate();
 
         if (isPump && _clawdBalance() > 0) {
