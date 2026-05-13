@@ -1,5 +1,5 @@
 {
-  "name": "Scaffold-ETH 2 DApp",
-  "description": "A DApp built with Scaffold-ETH",
+  "name": "CLAWD Vault",
+  "description": "Personal CLAWD accumulator vault on Base — mean-reversion trading via Chainlink Automation",
   "iconPath": "logo.svg"
 }
