@@ -1,8 +1,8 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.20;
 
 import "./DeployHelpers.s.sol";
-import { DeployYourContract } from "./DeployYourContract.s.sol";
+import { DeployCLAWDVault } from "./DeployCLAWDVault.s.sol";
 
 /**
  * @notice Main deployment script for all contracts
@@ -15,11 +15,7 @@ contract DeployScript is ScaffoldETHDeploy {
         // Deploys all your contracts sequentially
         // Add new deployments here when needed
 
-        DeployYourContract deployYourContract = new DeployYourContract();
-        deployYourContract.run();
-
-        // Deploy another contract
-        // DeployMyContract myContract = new DeployMyContract();
-        // myContract.run();
+        DeployCLAWDVault deployCLAWDVault = new DeployCLAWDVault();
+        deployCLAWDVault.run();
     }
 }
